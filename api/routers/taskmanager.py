@@ -1,12 +1,15 @@
-from fastapi import APIRouter, HTTPException
+# api/routers/taskmanager.py
+from fastapi import APIRouter, HTTPException, Depends
 from datetime import datetime
 from typing import List
 from schemas.task import Task
 
 task_router = APIRouter()
-
 tasks = []
 counter = 0
+
+def get_tasks_list():
+    return tasks
 
 test_tasks = ["Купить продукты", "Сделать ДЗ", "Позвонить маме"]
 for text in test_tasks:
@@ -21,7 +24,7 @@ def get_tasks():
 def get_task(task_id: int):
     task = next((t for t in tasks if t.task_id == task_id), None)
     if not task:
-        raise HTTPException(404, "НЕТУ ТАКОЙ ЗАДАЧИ!!!!!")
+        raise HTTPException(status_code=404, detail={"error": {"code": "TaskNotFound", "message": "Task not found"}})
     return task
 
 @task_router.post("/tasks", response_model=Task, status_code=201)
@@ -36,7 +39,7 @@ def create_task(task_text: str, task_deadline: datetime = None):
 def update_task(task_id: int, task_text: str = None, task_deadline: datetime = None):
     task = next((t for t in tasks if t.task_id == task_id), None)
     if not task:
-        raise HTTPException(404, "НЕТУ ТАКОЙ ЗАДАЧИ!!!!!")
+        raise HTTPException(status_code=404, detail={"error": {"code": "TaskNotFound", "message": "Task not found"}})
     
     if task_text:
         task.task_text = task_text
@@ -50,7 +53,7 @@ def delete_task(task_id: int):
     global tasks
     task = next((t for t in tasks if t.task_id == task_id), None)
     if not task:
-        raise HTTPException(404, "НЕТУ ТАКОЙ ЗАДАЧИ!!!!!")
+        raise HTTPException(status_code=404, detail={"error": {"code": "TaskNotFound", "message": "Task not found"}})
     
     tasks = [t for t in tasks if t.task_id != task_id]
     return None
